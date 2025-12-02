@@ -26,6 +26,11 @@
     Connect-ZtAssessment -SkipAzureConnection
 
     Connects to Microsoft Graph only, skipping the Azure connection. The tests that require Azure connectivity will be skipped.
+
+.EXAMPLE
+    Connect-ZtAssessment -ClientId "your-app-id" -TenantId "your-tenant-id" -CertificateThumbprint "certificate-thumbprint"
+
+    Connects to Microsoft Graph using certificate authentication with an app registration. The certificate must be installed in the CurrentUser or LocalMachine certificate store.
 #>
 
 function Connect-ZtAssessment
@@ -50,7 +55,15 @@ function Connect-ZtAssessment
         [string]$ClientId,
 
         # If specified, skips connecting to Azure and only connects to Microsoft Graph.
-        [switch]$SkipAzureConnection
+        [switch]$SkipAzureConnection,
+
+        # Thumbprint of the certificate to use for authentication. The certificate must be installed in the CurrentUser or LocalMachine certificate store.
+        # This parameter is used for app-only authentication (application permissions). ClientId and TenantId are required when using this parameter.
+        [string]$CertificateThumbprint,
+
+        # X509Certificate2 certificate object to use for authentication. Alternative to CertificateThumbprint.
+        # This parameter is used for app-only authentication (application permissions). ClientId and TenantId are required when using this parameter.
+        [System.Security.Cryptography.X509Certificates.X509Certificate2]$Certificate
     )
 
     Write-Host "`nConnecting to Microsoft Graph" -ForegroundColor Yellow
@@ -78,6 +91,26 @@ function Connect-ZtAssessment
 
         if ($ClientId) {
             $params['ClientId'] = $ClientId
+        }
+
+        if ($CertificateThumbprint) {
+            if (!$ClientId) {
+                throw "ClientId is required when using CertificateThumbprint for certificate authentication."
+            }
+            if (!$TenantId) {
+                throw "TenantId is required when using CertificateThumbprint for certificate authentication."
+            }
+            $params['CertificateThumbprint'] = $CertificateThumbprint
+        }
+
+        if ($Certificate) {
+            if (!$ClientId) {
+                throw "ClientId is required when using Certificate for certificate authentication."
+            }
+            if (!$TenantId) {
+                throw "TenantId is required when using Certificate for certificate authentication."
+            }
+            $params['Certificate'] = $Certificate
         }
 
         Write-PSFMessage "Connecting to Microsoft Graph with params: $($params | Out-String)" -Level Verbose

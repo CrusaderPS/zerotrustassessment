@@ -1,0 +1,28 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Build artifacts
+build/
+node_modules/
+.vscode/
+.idea/
+
+# Test files
+code-tests/
+*.Tests.ps1
+
+# React and report source (not needed in container)
+src/react/
+src/report/
+
+# Other files
+*.log
+.DS_Store
+Thumbs.db

@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  zerotrust-assessment:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: zerotrust-assessment:latest
+    container_name: zerotrust-assessment
+    volumes:
+      # Mount results folder to local machine (Windows path format)
+      - ./results:C:/results
+    environment:
+      # Override these if needed
+      - APPLICATION_ID=${APPLICATION_ID:-58a6a0f9-c6cd-4d62-a926-d668ab305a2f}
+      - TENANT_ID=${TENANT_ID:-7570d255-ab35-4f21-b880-2e785a9e2cd4}
+      - CERT_PASSWORD=${CERT_PASSWORD:-MySUp3rPwD2C0nn3cT@T3n@nT%25}
+    # Remove container after execution
+    restart: "no"
