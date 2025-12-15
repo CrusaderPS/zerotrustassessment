@@ -290,9 +290,17 @@ function Add-ZtDeviceAppProtectionPolicies {
     $activity = "Getting Device App protection policies"
     Write-ZtProgress -Activity $activity -Status "Processing"
 
-    $appProtectionPoliciesAndroid = Invoke-ZtGraphRequest -RelativeUri 'deviceAppManagement/androidManagedAppProtections' -QueryParameters @{ '$expand' = 'assignments,apps,deploymentSummary' } -ApiVersion 'beta'
-    $appProtectionPoliciesIos = Invoke-ZtGraphRequest -RelativeUri 'deviceAppManagement/iosManagedAppProtections' -QueryParameters @{ '$expand' = 'assignments,apps,deploymentSummary' } -ApiVersion 'beta'
-    $appProtectionPoliciesWindows = Invoke-ZtGraphRequest -RelativeUri 'deviceAppManagement/mdmWindowsInformationProtectionPolicies' -QueryParameters @{ '$expand' = 'assignments,protectedAppLockerFiles,exemptAppLockerFiles' } -ApiVersion 'beta'
+    try {
+        $appProtectionPoliciesAndroid = Invoke-ZtGraphRequest -RelativeUri 'deviceAppManagement/androidManagedAppProtections' -QueryParameters @{ '$expand' = 'assignments,apps,deploymentSummary' } -ApiVersion 'beta'
+        $appProtectionPoliciesIos = Invoke-ZtGraphRequest -RelativeUri 'deviceAppManagement/iosManagedAppProtections' -QueryParameters @{ '$expand' = 'assignments,apps,deploymentSummary' } -ApiVersion 'beta'
+        $appProtectionPoliciesWindows = Invoke-ZtGraphRequest -RelativeUri 'deviceAppManagement/mdmWindowsInformationProtectionPolicies' -QueryParameters @{ '$expand' = 'assignments,protectedAppLockerFiles,exemptAppLockerFiles' } -ApiVersion 'beta'
+    }
+    catch {
+        Write-PSFMessage -Level Warning -Message "Failed to retrieve app protection policies. This may be due to missing API permissions. Error: $_"
+        Add-ZtTenantInfo -Name "ConfigDeviceAppProtectionPolicies" -Value @()
+        Write-ZtProgress -Activity $activity -Status "Completed (with errors)"
+        return
+    }
 
     # Add a policy type property to each policy for identification
     $appProtectionPoliciesAndroid | ForEach-Object { $_ | Add-Member -MemberType NoteProperty -Name Platform -Value 'Android' -Force }

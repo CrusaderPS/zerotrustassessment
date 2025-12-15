@@ -61,10 +61,22 @@
 	finally {
 		if ($workflow) {
 			# Disable CTRL+C to prevent impatient users from finishing the cleanup. Failing to do so may lead to a locked database, preventing a clean restart.
-			Disable-PSFConsoleInterrupt
+			try {
+				Disable-PSFConsoleInterrupt
+			}
+			catch {
+				# Ignore errors when console handle is not available (e.g., in Docker containers)
+				Write-PSFMessage -Level Debug -Message "Could not disable console interrupt: $_"
+			}
 			$workflow | Stop-PSFRunspaceWorkflow
 			$workflow | Remove-PSFRunspaceWorkflow
 		}
-		Enable-PSFConsoleInterrupt
+		try {
+			Enable-PSFConsoleInterrupt
+		}
+		catch {
+			# Ignore errors when console handle is not available (e.g., in Docker containers)
+			Write-PSFMessage -Level Debug -Message "Could not enable console interrupt: $_"
+		}
 	}
 }

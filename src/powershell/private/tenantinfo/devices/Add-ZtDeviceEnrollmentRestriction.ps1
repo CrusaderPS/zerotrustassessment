@@ -81,7 +81,15 @@ function Add-ZtDeviceEnrollmentRestriction {
     $activity = "Getting Device enrollment restriction summary"
     Write-ZtProgress -Activity $activity -Status "Processing"
 
-    $deviceEnrollmentConfigurations = Invoke-ZtGraphRequest -RelativeUri 'deviceManagement/deviceEnrollmentConfigurations' -QueryParameters @{ '$expand' = 'assignments' } -ApiVersion 'beta'
+    try {
+        $deviceEnrollmentConfigurations = Invoke-ZtGraphRequest -RelativeUri 'deviceManagement/deviceEnrollmentConfigurations' -QueryParameters @{ '$expand' = 'assignments' } -ApiVersion 'beta'
+    }
+    catch {
+        Write-PSFMessage -Level Warning -Message "Failed to retrieve device enrollment configurations. This may be due to missing API permissions. Error: $_"
+        Add-ZtTenantInfo -Name "ConfigDeviceEnrollmentRestriction" -Value @()
+        Write-ZtProgress -Activity $activity -Status "Completed (with errors)"
+        return
+    }
 
     $platformRestrictions = $deviceEnrollmentConfigurations | Where-Object { $_.deviceEnrollmentConfigurationType -eq 'singlePlatformRestriction' }
 

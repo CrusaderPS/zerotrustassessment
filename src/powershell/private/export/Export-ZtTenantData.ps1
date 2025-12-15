@@ -139,7 +139,13 @@ https://github.com/microsoft/zerotrustassessment/issues
 	}
 	finally {
 		if ($workflow) {
-			Disable-PSFConsoleInterrupt
+			try {
+				Disable-PSFConsoleInterrupt
+			}
+			catch {
+				# Ignore errors when console handle is not available (e.g., in Docker containers)
+				Write-PSFMessage -Level Debug -Message "Could not disable console interrupt: $_"
+			}
 			$workflow | Stop-PSFRunspaceWorkflow
 
 			# Collect statistical data for later troubleshooting. Retrieve via Get-ZtExportStatistics
@@ -151,6 +157,12 @@ https://github.com/microsoft/zerotrustassessment/issues
 			$workflow | Remove-PSFRunspaceWorkflow
 		}
 
-		Enable-PSFConsoleInterrupt
+		try {
+			Enable-PSFConsoleInterrupt
+		}
+		catch {
+			# Ignore errors when console handle is not available (e.g., in Docker containers)
+			Write-PSFMessage -Level Debug -Message "Could not enable console interrupt: $_"
+		}
 	}
 }

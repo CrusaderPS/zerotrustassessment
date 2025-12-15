@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   zerotrust-assessment:
     build:
@@ -7,6 +5,13 @@ services:
       dockerfile: Dockerfile
     image: zerotrust-assessment:latest
     container_name: zerotrust-assessment
+    platform: windows/amd64
+    # Memory limit (Windows containers may need Docker Desktop settings instead)
+    # For Windows containers, also increase memory in Docker Desktop Settings > Resources > Advanced
+    deploy:
+      resources:
+        limits:
+          memory: 4G
     volumes:
       # Mount results folder to local machine (Windows path format)
       - ./results:C:/results

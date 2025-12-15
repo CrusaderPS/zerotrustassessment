@@ -14,38 +14,45 @@ function Add-ZtDeviceWindowsEnrollment
     $activity = "Getting Windows enrollment summary"
     Write-ZtProgress -Activity $activity -Status "Processing"
 
-    $policies = Invoke-ZtGraphRequest -RelativeUri 'Policies/MobileDeviceManagementPolicies' -QueryParameters @{ '$expand' = 'includedGroups' } -ApiVersion 'beta'
+    try {
+        $policies = Invoke-ZtGraphRequest -RelativeUri 'Policies/MobileDeviceManagementPolicies' -QueryParameters @{ '$expand' = 'includedGroups' } -ApiVersion 'beta'
 
-    # Sort policies by AppliesTo (descending) then by DisplayName (ascending)
-    $sortedPolicies = $policies | Sort-Object @{Expression='appliesTo';Descending=$true}, @{Expression='displayName';Ascending=$true}
+        # Sort policies by AppliesTo (descending) then by DisplayName (ascending)
+        $sortedPolicies = $policies | Sort-Object @{Expression='appliesTo';Descending=$true}, @{Expression='displayName';Ascending=$true}
 
-    # Create the table data structure
-    $tableData = @()
-    foreach ($policy in $sortedPolicies) {
-        # Determine group names display
-        $groupNames = if ($policy.appliesTo -eq 'selected' -and $policy.includedGroups) {
-            ($policy.includedGroups | ForEach-Object { $_.displayName }) -join ', '
-        } else {
-            'Not Applicable'
+        # Create the table data structure
+        $tableData = @()
+        foreach ($policy in $sortedPolicies) {
+            # Determine group names display
+            $groupNames = if ($policy.appliesTo -eq 'selected' -and $policy.includedGroups) {
+                ($policy.includedGroups | ForEach-Object { $_.displayName }) -join ', '
+            } else {
+                'Not Applicable'
+            }
+
+            # Convert AppliesTo to friendly name
+            $appliesToName = switch ($policy.appliesTo) {
+                'all' { 'All' }
+                'selected' { 'Selected' }
+                'none' { 'None' }
+                default { $policy.appliesTo }
+            }
+
+            $tableData += [PSCustomObject]@{
+                Type = 'MDM'
+                PolicyName = $policy.displayName
+                AppliesTo = $appliesToName
+                Groups = $groupNames
+            }
         }
 
-        # Convert AppliesTo to friendly name
-        $appliesToName = switch ($policy.appliesTo) {
-            'all' { 'All' }
-            'selected' { 'Selected' }
-            'none' { 'None' }
-            default { $policy.appliesTo }
-        }
-
-        $tableData += [PSCustomObject]@{
-            Type = 'MDM'
-            PolicyName = $policy.displayName
-            AppliesTo = $appliesToName
-            Groups = $groupNames
-        }
+        Add-ZtTenantInfo -Name "ConfigWindowsEnrollment" -Value $tableData
+        Write-ZtProgress -Activity $activity -Status "Completed"
     }
-
-    Add-ZtTenantInfo -Name "ConfigWindowsEnrollment" -Value $tableData
-
-    Write-ZtProgress -Activity $activity -Status "Completed"
+    catch {
+        Write-PSFMessage -Level Warning -Message "Failed to retrieve Windows enrollment policies. This may be due to missing API permissions. Error: $_"
+        # Add empty table so the report doesn't break
+        Add-ZtTenantInfo -Name "ConfigWindowsEnrollment" -Value @()
+        Write-ZtProgress -Activity $activity -Status "Completed (with errors)"
+    }
 }
