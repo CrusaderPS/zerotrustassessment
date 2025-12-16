@@ -45,33 +45,14 @@ try {
     Connect-AzAccount -ServicePrincipal -ApplicationId $env:APPLICATION_ID -TenantId $env:TENANT_ID -CertificateThumbprint $cert.Thumbprint | Out-Null
     Write-Host 'Connected to Azure successfully' -ForegroundColor Green
 
-    # Ensure results directory exists
+    # Clean existing results and prepare for fresh assessment
     $resultsPath = 'C:\results'
     $htmlReportPath = Join-Path $resultsPath "ZeroTrustAssessmentReport.html"
-    $exportPath = Join-Path $resultsPath "zt-export"
 
-    # Check if we should resume (only if RESUME environment variable is set to "true")
-    $shouldResume = $env:RESUME -eq "true"
-
-    if ($shouldResume) {
-        # Resume mode: only resume if export data exists but no HTML report
-        $hasExportData = (Test-Path $exportPath) -and ((Get-ChildItem $exportPath -ErrorAction SilentlyContinue).Count -gt 0)
-        $hasHtmlReport = Test-Path $htmlReportPath
-
-        if ($hasExportData -and -not $hasHtmlReport) {
-            Write-Host 'Resume mode: Found existing export data but no HTML report. Resuming assessment...' -ForegroundColor Yellow
-        }
-        else {
-            Write-Host 'Resume mode: No existing export data found or report already exists. Starting fresh assessment...' -ForegroundColor Yellow
-            $shouldResume = $false
-        }
-    }
-    else {
-        # Fresh run mode: Clean existing results for a fresh assessment
-        if (Test-Path $resultsPath) {
-            Write-Host 'Cleaning existing results for fresh assessment...' -ForegroundColor Yellow
-            Remove-Item -Path $resultsPath -Recurse -Force -ErrorAction SilentlyContinue
-        }
+    # Always start fresh - clean existing results
+    if (Test-Path $resultsPath) {
+        Write-Host 'Cleaning existing results for fresh assessment...' -ForegroundColor Yellow
+        Remove-Item -Path $resultsPath -Recurse -Force -ErrorAction SilentlyContinue
     }
 
     # Ensure results directory exists
@@ -82,14 +63,7 @@ try {
     # Run the assessment and output to results folder
     Write-Host 'Starting Zero Trust Assessment...' -ForegroundColor Yellow
     Write-Host "  Output path: $resultsPath" -ForegroundColor Gray
-    Write-Host "  Mode: $(if ($shouldResume) { 'Resume' } else { 'Fresh' })" -ForegroundColor Gray
-
-    if ($shouldResume) {
-        Invoke-ZtAssessment -Path $resultsPath -DisableTelemetry -Resume
-    }
-    else {
-        Invoke-ZtAssessment -Path $resultsPath -DisableTelemetry
-    }
+    Invoke-ZtAssessment -Path $resultsPath -DisableTelemetry
     Write-Host 'Assessment completed successfully!' -ForegroundColor Green
     Write-Host "Results are available in: $resultsPath" -ForegroundColor Cyan
     Write-Host "HTML Report: $htmlReportPath" -ForegroundColor Cyan
