@@ -22,6 +22,15 @@ code-tests/
 src/react/
 src/report/
 
+# Results folder (mounted as volume, don't include in image)
+results/
+
+# Docker files (not needed in container)
+docker-compose.yml
+Dockerfile
+.dockerignore
+DOCKER.md
+
 # Other files
 *.log
 .DS_Store

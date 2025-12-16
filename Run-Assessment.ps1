@@ -45,44 +45,25 @@ try {
     Connect-AzAccount -ServicePrincipal -ApplicationId $env:APPLICATION_ID -TenantId $env:TENANT_ID -CertificateThumbprint $cert.Thumbprint | Out-Null
     Write-Host 'Connected to Azure successfully' -ForegroundColor Green
 
-    # Ensure results directory exists
+    # Clean existing results and prepare for fresh assessment
     $resultsPath = 'C:\results'
+    $htmlReportPath = Join-Path $resultsPath "ZeroTrustAssessmentReport.html"
+
+    # Always start fresh - clean existing results
+    if (Test-Path $resultsPath) {
+        Write-Host 'Cleaning existing results for fresh assessment...' -ForegroundColor Yellow
+        Remove-Item -Path $resultsPath -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    # Ensure results directory exists
     if (-not (Test-Path $resultsPath)) {
         New-Item -ItemType Directory -Path $resultsPath -Force | Out-Null
-    }
-
-    # Check if HTML report already exists (assessment completed)
-    $htmlReportPath = Join-Path $resultsPath "ZeroTrustAssessmentReport.html"
-    $exportPath = Join-Path $resultsPath "zt-export"
-    $hasExportData = (Test-Path $exportPath) -and ((Get-ChildItem $exportPath -ErrorAction SilentlyContinue).Count -gt 0)
-    $hasHtmlReport = Test-Path $htmlReportPath
-
-    # Determine if we should resume or start fresh
-    $shouldResume = $false
-    if ($hasExportData -and -not $hasHtmlReport) {
-        Write-Host 'Found existing export data but no HTML report. Resuming assessment...' -ForegroundColor Yellow
-        $shouldResume = $true
-    }
-    elseif ($hasHtmlReport) {
-        Write-Host 'HTML report already exists. For a fresh assessment, delete the results folder first.' -ForegroundColor Yellow
-        Write-Host "Report location: $htmlReportPath" -ForegroundColor Cyan
-        exit 0
-    }
-    elseif ($hasExportData) {
-        # In Docker/non-interactive mode, auto-clean if export data exists but no report
-        Write-Host 'Cleaning existing export data for fresh assessment...' -ForegroundColor Yellow
-        Remove-Item -Path $exportPath -Recurse -Force -ErrorAction SilentlyContinue
     }
 
     # Run the assessment and output to results folder
     Write-Host 'Starting Zero Trust Assessment...' -ForegroundColor Yellow
     Write-Host "  Output path: $resultsPath" -ForegroundColor Gray
-    if ($shouldResume) {
-        Invoke-ZtAssessment -Path $resultsPath -DisableTelemetry -Resume
-    }
-    else {
-        Invoke-ZtAssessment -Path $resultsPath -DisableTelemetry
-    }
+    Invoke-ZtAssessment -Path $resultsPath -DisableTelemetry
     Write-Host 'Assessment completed successfully!' -ForegroundColor Green
     Write-Host "Results are available in: $resultsPath" -ForegroundColor Cyan
     Write-Host "HTML Report: $htmlReportPath" -ForegroundColor Cyan

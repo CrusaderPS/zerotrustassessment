@@ -398,7 +398,14 @@ function Invoke-ZtAssessment {
 	Write-Host "▶▶▶ ✨ Your feedback matters! Help us improve 👉 https://aka.ms/ztassess/feedback ◀◀◀" -ForegroundColor Yellow
 	Write-Host
 	Write-Host
-	Invoke-Item $htmlReportPath | Out-Null
+	# Try to open the report, but don't fail if running in Docker/non-interactive environment
+	try {
+		Invoke-Item $htmlReportPath -ErrorAction Stop | Out-Null
+	}
+	catch {
+		# Silently ignore - this is expected in Docker containers or non-interactive environments
+		Write-PSFMessage -Level Debug -Message "Could not open HTML report (expected in Docker/non-interactive environments): $_"
+	}
 
 	if ($ExportLog) {
 		Write-ZtProgress -Activity "Creating support package"
