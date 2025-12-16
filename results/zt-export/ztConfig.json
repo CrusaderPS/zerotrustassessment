@@ -5,14 +5,14 @@
   "RoleDefinition": true,
   "RoleAssignment": true,
   "ServicePrincipalSignIn": true,
+  "RoleEligibilityScheduleInstance": true,
   "RoleAssignmentScheduleInstance": true,
+  "UserRegistrationDetails": true,
   "RoleManagementPolicyAssignment": true,
   "RoleAssignmentGroup": true,
-  "RoleEligibilityScheduleInstance": true,
-  "RoleAssignmentScheduleInstanceGroup": true,
-  "UserRegistrationDetails": true,
-  "Device": true,
   "RoleEligibilityScheduleInstanceGroup": true,
+  "Device": true,
+  "RoleAssignmentScheduleInstanceGroup": true,
   "ServicePrincipal": true,
   "SignIn": true
 }
