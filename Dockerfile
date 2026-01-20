@@ -17,7 +17,7 @@ RUN powershell -Command "$ErrorActionPreference = 'Stop'; Invoke-WebRequest -Uri
 RUN powershell -Command "$ErrorActionPreference = 'Stop'; Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Scope AllUsers -Force; Install-Module PowerShellGet -Scope AllUsers -Force; Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted; Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope LocalMachine -Force; [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12"
 
 # Install required PowerShell modules (matching ZeroTrustAssessment.psd1 requirements)
-RUN powershell -Command "$ErrorActionPreference = 'Stop'; Install-Module -Name Az.Accounts -RequiredVersion 4.0.2 -Scope AllUsers -Force -AllowClobber; Install-Module -Name Microsoft.Graph.Authentication -RequiredVersion 2.32.0 -Scope AllUsers -Force -AllowClobber; Install-Module -Name Microsoft.Graph.Beta.Teams -RequiredVersion 2.32.0 -Scope AllUsers -Force -AllowClobber; Install-Module -Name PSFramework -RequiredVersion 1.13.419 -Scope AllUsers -Force -AllowClobber"
+RUN powershell -Command "$ErrorActionPreference = 'Stop'; Install-Module -Name ExchangeOnlineManagement -RequiredVersion 3.8.0 -Scope AllUsers -Force -AllowClobber; Install-Module -Name Az.Accounts -RequiredVersion 4.0.2 -Scope AllUsers -Force -AllowClobber; Install-Module -Name Microsoft.Graph.Authentication -RequiredVersion 2.32.0 -Scope AllUsers -Force -AllowClobber; Install-Module -Name Microsoft.Graph.Beta.Teams -RequiredVersion 2.32.0 -Scope AllUsers -Force -AllowClobber; Install-Module -Name PSFramework -RequiredVersion 1.13.419 -Scope AllUsers -Force -AllowClobber"
 
 # Copy the certificate file
 COPY MaesterAuth.pfx C:\\ZeroTrustAssessment\\MaesterAuth.pfx

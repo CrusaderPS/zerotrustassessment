@@ -1,4 +1,4 @@
-﻿function Connect-ZtAssessment {
+function Connect-ZtAssessment {
 	<#
 	.SYNOPSIS
 		Helper method to connect to Microsoft Graph using Connect-MgGraph with the required scopes.
@@ -116,18 +116,7 @@
 		$params.ContextScope = 'Process'
 	}
 
-
-<<<<<<< HEAD
-    Connects to Microsoft Graph only, skipping the Azure connection. The tests that require Azure connectivity will be skipped.
-
-.EXAMPLE
-    Connect-ZtAssessment -ClientId "your-app-id" -TenantId "your-tenant-id" -CertificateThumbprint "certificate-thumbprint"
-
-    Connects to Microsoft Graph using certificate authentication with an app registration. The certificate must be installed in the CurrentUser or LocalMachine certificate store.
-#>
-=======
 	$OrderedImport = Get-ModuleImportOrder -Name @('Az.Accounts', 'ExchangeOnlineManagement', 'Microsoft.Graph.Authentication', 'Microsoft.Online.SharePoint.PowerShell')
->>>>>>> upstream/main
 
 	Write-Verbose "Import Order: $($OrderedImport.Name -join ', ')"
 
@@ -157,24 +146,10 @@
 			}
 		}
 
-<<<<<<< HEAD
-        # If specified, skips connecting to Azure and only connects to Microsoft Graph.
-        [switch]$SkipAzureConnection,
-
-        # Thumbprint of the certificate to use for authentication. The certificate must be installed in the CurrentUser or LocalMachine certificate store.
-        # This parameter is used for app-only authentication (application permissions). ClientId and TenantId are required when using this parameter.
-        [string]$CertificateThumbprint,
-
-        # X509Certificate2 certificate object to use for authentication. Alternative to CertificateThumbprint.
-        # This parameter is used for app-only authentication (application permissions). ClientId and TenantId are required when using this parameter.
-        [System.Security.Cryptography.X509Certificates.X509Certificate2]$Certificate
-    )
-=======
 		'Az.Accounts' {
 			if ($SkipAzureConnection) {
 				continue
 			}
->>>>>>> upstream/main
 
 			if ($Service -contains 'Azure' -or $Service -contains 'All') {
 				Write-Host "`nConnecting to Azure" -ForegroundColor Yellow
@@ -214,37 +189,6 @@
 			}
 		}
 
-<<<<<<< HEAD
-        if ($CertificateThumbprint) {
-            if (!$ClientId) {
-                throw "ClientId is required when using CertificateThumbprint for certificate authentication."
-            }
-            if (!$TenantId) {
-                throw "TenantId is required when using CertificateThumbprint for certificate authentication."
-            }
-            $params['CertificateThumbprint'] = $CertificateThumbprint
-        }
-
-        if ($Certificate) {
-            if (!$ClientId) {
-                throw "ClientId is required when using Certificate for certificate authentication."
-            }
-            if (!$TenantId) {
-                throw "TenantId is required when using Certificate for certificate authentication."
-            }
-            $params['Certificate'] = $Certificate
-        }
-
-        Write-PSFMessage "Connecting to Microsoft Graph with params: $($params | Out-String)" -Level Verbose
-        Connect-MgGraph @params
-        $contextTenantId = (Get-MgContext).TenantId
-    }
-    catch [Management.Automation.CommandNotFoundException]
-    {
-        Write-Host "`nThe Graph PowerShell module is not installed. Please install the module using the following command. For more information see https://learn.microsoft.com/powershell/microsoftgraph/installation" -ForegroundColor Red
-        Write-Host "`Install-Module Microsoft.Graph -Scope CurrentUser`n" -ForegroundColor Yellow
-    }
-=======
 		'ExchangeOnlineManagement' {
 			if ($Service -contains 'ExchangeOnline' -or $Service -contains 'All') {
 				Write-Verbose 'Connecting to Microsoft Exchange Online'
@@ -259,7 +203,6 @@
 					else {
 						Connect-ExchangeOnline -ShowBanner:$false -ExchangeEnvironmentName $ExchangeEnvironmentName
 					}
->>>>>>> upstream/main
 
 					# Fix for Get-Label visibility in other scopes
 					if (Get-Command Get-Label -ErrorAction SilentlyContinue) {

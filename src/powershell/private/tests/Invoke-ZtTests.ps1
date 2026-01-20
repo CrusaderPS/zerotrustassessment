@@ -1,4 +1,4 @@
-﻿function Invoke-ZtTests {
+function Invoke-ZtTests {
 	<#
 	.SYNOPSIS
 		Runs all the Zero Trust Assessment tests.
@@ -88,12 +88,9 @@
 			catch {
 				# Ignore errors when console handle is not available (e.g., in Docker containers)
 				Write-PSFMessage -Level Debug -Message "Could not disable console interrupt: $_"
-			}
-			$workflow | Stop-PSFRunspaceWorkflow
-			$workflow | Remove-PSFRunspaceWorkflow
-			Enable-PSFConsoleInterrupt
 		}
-<<<<<<< HEAD
+		$workflow | Stop-PSFRunspaceWorkflow
+		$workflow | Remove-PSFRunspaceWorkflow
 		try {
 			Enable-PSFConsoleInterrupt
 		}
@@ -101,7 +98,6 @@
 			# Ignore errors when console handle is not available (e.g., in Docker containers)
 			Write-PSFMessage -Level Debug -Message "Could not enable console interrupt: $_"
 		}
-=======
->>>>>>> upstream/main
+	}
 	}
 }
