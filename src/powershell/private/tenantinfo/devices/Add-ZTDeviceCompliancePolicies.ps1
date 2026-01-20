@@ -62,22 +62,16 @@ function Add-ZtDeviceCompliancePolicies {
         try {
             $action = @($scheduledActionConfigurations).where{ $_.actionType -eq $actionType }
             if ($action) {
-                # Handle case where $action might be an array - take the first one
-                $actionItem = if ($action -is [Array] -and $action.Count -gt 0) { $action[0] } else { $action }
-                if ($actionItem -and $actionItem.gracePeriodHours) {
-                    # Handle case where gracePeriodHours might be an array
-                    $hours = $actionItem.gracePeriodHours
-                    if ($hours -is [Array] -and $hours.Count -gt 0) {
-                        $hours = $hours[0]
-                    }
-                    # Convert to double if it's a valid number
-                    $hoursDouble = [double]$hours
-                    if ($hoursDouble -ge 0) {
-                        $gracePeriod = [TimeSpan]::FromHours($hoursDouble).TotalDays
-                        $gracePeriodDays = if( $gracePeriod -eq 0) { 'Immediately' } else { $gracePeriod }
-                        return $gracePeriodDays
-                    }
-                }
+                # Ensure that in case of multiple matching actions, we take the longest grace period
+                # And that in case of an empty grace period field, we treat it as 0.
+                $graceHours = @($action.gracePeriodHours | Remove-PSFNull | Sort-Object -Descending)[0]
+                if (-not $graceHours) { $graceHours = 0 }
+
+                $gracePeriod = [TimeSpan]::FromHours($graceHours).TotalDays
+                $gracePeriodDays = if( $gracePeriod -eq 0) { 'Immediately' } else { $gracePeriod }
+                return $gracePeriodDays
+            } else {
+                return ''
             }
         }
         catch {
